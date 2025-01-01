@@ -1,4 +1,33 @@
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ModuleNotFoundError:
+    class MockGPIO:
+        BCM = "BCM"
+        OUT = "OUT"
+        IN = "IN"
+
+        @staticmethod
+        def setmode(mode):
+            print(f"GPIO mode set to {mode}")
+
+        @staticmethod
+        def setup(pin, mode):
+            print(f"Pin {pin} setup as {mode}")
+
+        @staticmethod
+        def output(pin, state):
+            print(f"Pin {pin} output set to {state}")
+
+        @staticmethod
+        def input(pin):
+            return 0  # Simulated always low
+
+        @staticmethod
+        def cleanup():
+            print("GPIO cleanup")
+
+    GPIO = MockGPIO()
+
 import time
 
 # Konfigurasi Pin GPIO
@@ -17,6 +46,10 @@ def read_distance():
     GPIO.output(TRIG_PIN, False)
 
     # Hitung waktu pantulan (echo)
+    start_time = time.time()
+    end_time = time.time()
+
+    # Simulasi pembacaan input ECHO_PIN (untuk environment non-RPi)
     while GPIO.input(ECHO_PIN) == 0:
         start_time = time.time()
     while GPIO.input(ECHO_PIN) == 1:
