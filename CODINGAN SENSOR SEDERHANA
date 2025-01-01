@@ -1,0 +1,49 @@
+import RPi.GPIO as GPIO
+import time
+
+# Konfigurasi Pin GPIO
+TRIG_PIN = 23  # Pin Trigger
+ECHO_PIN = 24  # Pin Echo
+
+# Setup GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(TRIG_PIN, GPIO.OUT)
+GPIO.setup(ECHO_PIN, GPIO.IN)
+
+def read_distance():
+    # Kirim sinyal trigger
+    GPIO.output(TRIG_PIN, True)
+    time.sleep(0.00001)  # Sinyal 10µs
+    GPIO.output(TRIG_PIN, False)
+
+    # Hitung waktu pantulan (echo)
+    while GPIO.input(ECHO_PIN) == 0:
+        start_time = time.time()
+    while GPIO.input(ECHO_PIN) == 1:
+        end_time = time.time()
+
+    # Hitung jarak (waktu x kecepatan suara / 2)
+    duration = end_time - start_time
+    distance = (duration * 34300) / 2  # Kecepatan suara 343 m/s
+    return distance
+
+def main():
+    try:
+        print("Sistem Sensor Produk Pabrik Siap")
+        while True:
+            distance = read_distance()
+            print(f"Jarak terdeteksi: {distance:.2f} cm")
+
+            if distance < 10:  # Threshold jarak (misalnya 10 cm)
+                print("Produk terdeteksi di jalur!")
+
+            time.sleep(1)  # Delay untuk pembacaan berikutnya
+
+    except KeyboardInterrupt:
+        print("Sistem dihentikan")
+
+    finally:
+        GPIO.cleanup()  # Reset semua konfigurasi GPIO
+
+if __name__ == "__main__":
+    main()
